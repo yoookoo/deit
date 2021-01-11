@@ -56,6 +56,7 @@ class INatDataset(ImageFolder):
 
     # __getitem__ and __len__ inherited from ImageFolder
 
+
 class ImageNetDataSet(Dataset):
     def __init__(self, root_dir, meta_file, transform=None):
         super(ImageNetDataSet, self).__init__()
