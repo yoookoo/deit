@@ -1,6 +1,7 @@
 # Copyright (c) 2015-present, Facebook, Inc.
 # All rights reserved.
 import os
+# import mc
 import json
 
 from torchvision import datasets, transforms
@@ -8,6 +9,9 @@ from torchvision.datasets.folder import ImageFolder, default_loader
 
 from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from timm.data import create_transform
+
+from torch.utils.data import Dataset
+from PIL import Image
 
 
 class INatDataset(ImageFolder):
@@ -52,6 +56,36 @@ class INatDataset(ImageFolder):
 
     # __getitem__ and __len__ inherited from ImageFolder
 
+class ImageNetDataSet(Dataset):
+    def __init__(self, root_dir, meta_file, transform=None):
+        super(ImageNetDataSet, self).__init__()
+
+        self.root_dir = root_dir
+        self.meta_file = meta_file
+        self.transform = transform
+        with open(meta_file) as f:
+            lines = f.readlines()
+        self.num = len(lines)
+        self.metas = []
+        for line in lines:
+            filename, label = line.rstrip().split()
+            self.metas.append({'filename': filename, 'label': label})
+
+    def __len__(self):
+        return self.num
+
+    def __getitem__(self, idx):
+        curr_meta = self.metas[idx]
+        filename = os.path.join(self.root_dir, curr_meta['filename'])
+        label = int(curr_meta['label'])
+        # add root_dir to filename
+        curr_meta['filename'] = filename
+        img = Image.open(filename)
+        if self.transform is not None:
+            img = self.transform(img)
+
+        return img, label
+
 
 def build_dataset(is_train, args):
     transform = build_transform(is_train, args)
@@ -60,8 +94,13 @@ def build_dataset(is_train, args):
         dataset = datasets.CIFAR100(args.data_path, train=is_train, transform=transform)
         nb_classes = 100
     elif args.data_set == 'IMNET':
-        root = os.path.join(args.data_path, 'train' if is_train else 'val')
-        dataset = datasets.ImageFolder(root, transform=transform)
+        if is_train:
+            root_dir = os.path.join(args.data_path, 'train')
+            meta_file = os.path.join(args.data_path, 'meta', 'train.txt')
+        else:
+            root_dir = os.path.join(args.data_path, 'val')
+            meta_file = os.path.join(args.data_path, 'meta', 'val.txt')
+        dataset = ImageNetDataSet(root_dir, meta_file, transform)
         nb_classes = 1000
     elif args.data_set == 'INAT':
         dataset = INatDataset(args.data_path, train=is_train, year=2018,
