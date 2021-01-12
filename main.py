@@ -171,7 +171,9 @@ def main(args):
 
     cudnn.benchmark = True
 
+    print('-----begin to build training dataset-----')
     dataset_train, args.nb_classes = build_dataset(is_train=True, args=args)
+    print('-----begin to build validation dataset-----')
     dataset_val, _ = build_dataset(is_train=False, args=args)
 
     if True:  # args.distributed:
