@@ -95,13 +95,8 @@ def build_dataset(is_train, args):
         dataset = datasets.CIFAR100(args.data_path, train=is_train, transform=transform)
         nb_classes = 100
     elif args.data_set == 'IMNET':
-        if is_train:
-            root_dir = os.path.join(args.data_path, 'train')
-            meta_file = os.path.join(args.data_path, 'meta', 'train.txt')
-        else:
-            root_dir = os.path.join(args.data_path, 'val')
-            meta_file = os.path.join(args.data_path, 'meta', 'val.txt')
-        dataset = ImageNetDataSet(root_dir, meta_file, transform)
+        root = os.path.join(args.data_path, 'train' if is_train else 'val')
+        dataset = datasets.ImageFolder(root, transform=transform)
         nb_classes = 1000
     elif args.data_set == 'INAT':
         dataset = INatDataset(args.data_path, train=is_train, year=2018,
