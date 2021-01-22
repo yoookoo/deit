@@ -22,6 +22,7 @@ from engine import train_one_epoch, evaluate
 from samplers import RASampler
 import models
 import vision_transformer
+import interactive_vit
 import utils
 
 
@@ -240,7 +241,7 @@ def main(args):
             drop_path_rate=args.drop_path,
             drop_block_rate=None,
         )
-    elif args.model in ['leit_tiny_patch16_224', 'leit_small_patch16_224', 'leit_base_patch16_224']:
+    else:
         model = create_model(
             args.model,
             pretrained=False,
@@ -251,8 +252,6 @@ def main(args):
             local_size=args.local_size,
             local_with_bn=args.local_with_bn
         )
-    else:
-        assert False
 
     # TODO: finetuning
 
